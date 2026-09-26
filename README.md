@@ -7,8 +7,9 @@ One folder per problem. No company names anywhere in this repo; the vault's pipe
 <problem>/
   PROBLEM.md      the spec, levels, edge cases
   cases.txt       sequential test cases, one Bank/Solution instance per `reset`
-  py/solution.py  solve here in Python        python3 py/run.py
-  cpp/solution.h  solve here in C++           make -C cpp test   (AddressSanitizer + UBSan on)
+  py/solution.py  solve here in Python        python3 py/run.py            one level: python3 py/run.py --level 2
+  cpp/solution.h  solve here in C++           make -C cpp test             one level: make -C cpp test L=2
+                  (a solution.cpp next to solution.h is linked automatically; sanitizers on)
   .reference/     a reference solution used only to validate cases.txt. Do not open before solving.
 TEMPLATE/         copy to start a new problem
 ```
@@ -22,7 +23,7 @@ TEMPLATE/         copy to start a new problem
 ## cases.txt format
 
 ```
-# comment
+# Level 1            <- a comment line starting a block is a section header; "Level N" enables --level N / L=N
 reset                              # fresh instance
 op arg1 arg2 ... => expected       # args are space-separated, first arg is the timestamp
 ```

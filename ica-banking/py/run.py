@@ -1,4 +1,6 @@
-"""Runs ../cases.txt against solution.Bank.  python3 run.py [cases.txt] [--solution other.py]"""
+"""Runs ../cases.txt against solution.Bank, one section per "# ..." header line.
+Usage: python3 run.py [cases.txt] [--level N] [--solution other.py]
+"""
 import importlib.util
 import pathlib
 import sys
@@ -14,6 +16,15 @@ OPS = {  # op -> argument converters, in order (first is always the timestamp)
     "merge_accounts": (int, str, str),
     "get_balance": (int, str, int),
 }
+
+TTY = sys.stdout.isatty()
+
+
+def paint(code, s):
+    return f"\033[{code}m{s}\033[0m" if TTY else s
+
+
+green, red, bold, dim = (lambda s: paint(32, s)), (lambda s: paint(31, s)), (lambda s: paint(1, s)), (lambda s: paint(2, s))
 
 
 def fmt(v):
@@ -33,41 +44,83 @@ def load(path):
     return mod.Bank
 
 
+def matches(header, level):
+    if not level:
+        return True
+    toks = header.split()
+    return len(toks) >= 2 and toks[0] == "Level" and toks[1] == level
+
+
+def close_section(sec):
+    line = f"{sec['pass']}/{sec['pass'] + sec['fail']} passed"
+    print((red("  ✗ " + line) if sec["fail"] else green("  ✓ " + line)) + "\n")
+
+
 def main(argv):
-    cases = HERE.parent / "cases.txt"
-    sol = HERE / "solution.py"
     args = list(argv)
-    if "--solution" in args:
-        i = args.index("--solution")
-        sol = pathlib.Path(args[i + 1])
-        del args[i:i + 2]
+    cases, sol, level = HERE.parent / "cases.txt", HERE / "solution.py", ""
+    for flag in ("--solution", "--level"):
+        if flag in args:
+            i = args.index(flag)
+            val = args[i + 1]
+            del args[i:i + 2]
+            if flag == "--solution":
+                sol = pathlib.Path(val)
+            else:
+                level = val
     if args:
         cases = pathlib.Path(args[0])
     Bank = load(sol)
-    bank, passed, failed = Bank(), 0, 0
+    bank, secs, active = Bank(), [], not level
     for n, raw in enumerate(open(cases), 1):
-        line = raw.split("#", 1)[0].strip()
-        if not line:
+        t = raw.strip()
+        if not t:
             continue
+        if t.startswith("#"):
+            h = t[1:].strip()
+            if not h:
+                continue
+            active = matches(h, level)
+            if active:
+                if secs:
+                    close_section(secs[-1])
+                secs.append({"name": h, "pass": 0, "fail": 0})
+                print(bold(h))
+            continue
+        if not active:
+            continue
+        line = raw.split("#", 1)[0].strip()
         lhs, _, exp = line.partition("=>")
+        lhs, exp = lhs.strip(), exp.strip()
         toks = lhs.split()
         op = toks[0]
         if op == "reset":
             bank = Bank()
             continue
-        conv = OPS[op]
-        call_args = [c(t) for c, t in zip(conv, toks[1:])]
+        if not secs:
+            secs.append({"name": "(no header)", "pass": 0, "fail": 0})
+            print(bold("(no header)"))
+        call_args = [c(tk) for c, tk in zip(OPS[op], toks[1:])]
         try:
             got = fmt(getattr(bank, op)(*call_args))
-        except Exception as e:  # keep going so later levels still report
+        except Exception as e:  # keep going so later sections still report
             got = f"<{type(e).__name__}: {e}>"
-        if got == exp.strip():
-            passed += 1
+        if got == exp:
+            secs[-1]["pass"] += 1
+            print(green("  ✓ ") + dim(f"{lhs} → {exp}"))
         else:
-            failed += 1
-            print(f"FAIL line {n}: {lhs.strip()} => got {got}, expected {exp.strip()}")
-    print(f"{passed} passed, {failed} failed")
-    return 1 if failed else 0
+            secs[-1]["fail"] += 1
+            print(red("  ✗ ") + f"line {n}: {lhs} → got {red(got)}, expected {green(exp)}")
+    if not secs:
+        print(f"no section matching Level {level}", file=sys.stderr)
+        return 2
+    close_section(secs[-1])
+    print(bold("Summary"))
+    fails = 0
+    for s in secs:
+        print(f"  {s['name']:<44} {s['pass']:>3}/{s['pass'] + s['fail']:<3} {red('✗') if s['fail'] else green('✓')}")
+        fails += s["fail"]
+    return 1 if fails else 0
 
 
 if __name__ == "__main__":
