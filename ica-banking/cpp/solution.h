@@ -11,9 +11,9 @@ constexpr long long DAY = 86'400'000;
 class Bank {
 public:
     // Level 1
-    bool create_account(long long ts, const std::string& id) { return false; }
-    std::optional<long long> top_up(long long ts, const std::string& id, long long amount) { return std::nullopt; }
-    std::optional<long long> consume(long long ts, const std::string& id, long long amount) { return std::nullopt; }
+    bool create_account(long long ts, const std::string& id);
+    std::optional<long long> top_up(long long ts, const std::string& id, long long amount);
+    std::optional<long long> consume(long long ts, const std::string& id, long long amount);
     // Level 2
     std::vector<std::string> top_spenders(long long ts, int n) { return {}; }
     // Level 3
@@ -22,4 +22,7 @@ public:
     // Level 4
     bool merge_accounts(long long ts, const std::string& id1, const std::string& id2) { return false; }
     std::optional<long long> get_balance(long long ts, const std::string& id, long long time_at) { return std::nullopt; }
+
+private:
+    std::unordered_map<std::string, long long> balance;
 };
