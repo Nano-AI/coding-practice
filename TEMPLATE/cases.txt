@@ -1,0 +1,3 @@
+# op args => expected     (true/false, int, string, null, or [a,b] / [])
+reset
+ping 1 => pong

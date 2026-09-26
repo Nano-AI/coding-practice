@@ -1,0 +1,115 @@
+# Level 1
+reset
+create_account 1 acc1 => true
+create_account 2 acc1 => false
+create_account 3 acc2 => true
+top_up 4 acc1 500 => 500
+top_up 5 nope 100 => null
+consume 6 acc1 200 => 300
+consume 7 acc1 1000 => null
+consume 8 nope 10 => null
+top_up 9 acc1 100 => 400
+
+# Level 2
+reset
+create_account 1 a => true
+create_account 2 b => true
+create_account 3 c => true
+top_up 4 a 1000 => 1000
+top_up 5 b 1000 => 1000
+top_up 6 c 1000 => 1000
+consume 7 a 300 => 700
+consume 8 b 300 => 700
+consume 9 c 100 => 900
+top_spenders 10 2 => [a(300),b(300)]
+top_spenders 11 5 => [a(300),b(300),c(100)]
+consume 12 c 250 => 650
+top_spenders 13 1 => [c(350)]
+top_spenders 14 0 => []
+
+# Level 3
+reset
+create_account 1 a => true
+create_account 2 b => true
+top_up 3 a 1000 => 1000
+transfer 4 a a 100 => null
+transfer 5 a zzz 100 => null
+transfer 6 a b 5000 => null
+transfer 7 a b 400 => transfer1
+top_up 8 a 1 => 601
+accept_transfer 9 zzz transfer1 => false
+accept_transfer 10 a transfer1 => false
+accept_transfer 11 b transfer9 => false
+accept_transfer 12 b transfer1 => true
+accept_transfer 13 b transfer1 => false
+top_up 14 b 1 => 401
+top_spenders 15 2 => [a(400),b(0)]
+transfer 16 a b 100 => transfer2
+top_up 86400017 b 1 => 402
+accept_transfer 86400018 b transfer2 => false
+top_up 86400019 a 1 => 602
+top_spenders 86400020 2 => [a(400),b(0)]
+
+# Level 3 — expiry boundary
+reset
+create_account 1 a => true
+create_account 2 b => true
+top_up 3 a 100 => 100
+transfer 4 a b 50 => transfer1
+accept_transfer 86400003 b transfer1 => true
+transfer 86400004 a b 50 => transfer2
+accept_transfer 172800004 b transfer2 => false
+top_up 172800005 a 1 => 51
+
+# Level 4 — merge and history
+reset
+create_account 1 a => true
+create_account 2 b => true
+top_up 3 a 100 => 100
+top_up 4 b 200 => 200
+consume 5 b 50 => 150
+get_balance 6 a 2 => 0
+get_balance 7 a 0 => null
+get_balance 8 zzz 5 => null
+get_balance 9 a 3 => 100
+get_balance 10 b 5 => 150
+get_balance 11 b 4 => 200
+merge_accounts 12 a a => false
+merge_accounts 13 a zzz => false
+merge_accounts 14 a b => true
+top_up 15 a 1 => 251
+top_up 16 b 1 => null
+get_balance 17 b 4 => null
+get_balance 18 a 4 => 300
+get_balance 19 a 5 => 250
+get_balance 20 a 15 => 251
+get_balance 21 a 1 => 0
+top_spenders 22 1 => [a(50)]
+get_balance 23 a 14 => 250
+
+# Level 4 — merge the destination of a pending transfer
+reset
+create_account 1 a => true
+create_account 2 b => true
+create_account 3 c => true
+top_up 4 a 500 => 500
+transfer 5 a b 100 => transfer1
+transfer 6 a c 50 => transfer2
+merge_accounts 7 c b => true
+accept_transfer 8 b transfer1 => false
+accept_transfer 9 c transfer1 => true
+accept_transfer 10 c transfer2 => true
+top_up 11 c 1 => 151
+top_spenders 12 1 => [a(150)]
+
+# Level 4 — merge the source of a pending transfer, then let it expire
+reset
+create_account 1 a => true
+create_account 2 b => true
+create_account 3 c => true
+top_up 4 a 300 => 300
+transfer 5 a b 100 => transfer1
+merge_accounts 6 c a => true
+top_up 86400006 c 1 => 301
+get_balance 86400007 c 86400005 => 300
+get_balance 86400008 c 5 => 200
