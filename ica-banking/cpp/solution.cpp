@@ -33,6 +33,10 @@ std::optional<long long> Bank::consume(long long ts, const std::string& id, long
 
 std::vector<std::string> Bank::top_spenders(long long ts, int n) {
   auto it = order.rbegin();
-  size_t i = 0;
+  int i = 0;
+
+  while (it != order.rend() && i < n) {
+
+  }
 }
 
