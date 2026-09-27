@@ -12,6 +12,7 @@ One folder per problem. No company names anywhere in this repo; the vault's pipe
                   (a solution.cpp next to solution.h is linked automatically; sanitizers on)
   .reference/     a reference solution used only to validate cases.txt. Do not open before solving.
 TEMPLATE/         copy to start a new problem
+cse333/           course head-start exercises (own Makefile + test.c each, not the cases.txt harness)
 ```
 
 ## Workflow
