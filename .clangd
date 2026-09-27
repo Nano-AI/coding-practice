@@ -1,2 +1,10 @@
+# C++ everywhere by default
 CompileFlags:
   Add: [-std=c++17, -Wall, -Wextra]
+---
+# C for the CSE 333 exercises (overrides the C++ flags in that tree)
+If:
+  PathMatch: cse333/.*
+CompileFlags:
+  Remove: [-std=c++17]
+  Add: [-xc, -std=c11, -Wall, -Wextra]
