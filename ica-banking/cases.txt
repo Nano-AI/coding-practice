@@ -27,6 +27,16 @@ consume 12 c 250 => 650
 top_spenders 13 1 => [c(350)]
 top_spenders 14 0 => []
 
+# Level 2 — tie-break by id when created in reverse order
+reset
+create_account 1 zed => true
+create_account 2 amy => true
+top_up 3 zed 100 => 100
+top_up 4 amy 100 => 100
+consume 5 zed 40 => 60
+consume 6 amy 40 => 60
+top_spenders 7 2 => [amy(40),zed(40)]
+
 # Level 3
 reset
 create_account 1 a => true
@@ -60,6 +70,19 @@ accept_transfer 86400003 b transfer1 => true
 transfer 86400004 a b 50 => transfer2
 accept_transfer 172800004 b transfer2 => false
 top_up 172800005 a 1 => 51
+
+# Level 3 — expiry must update the spend ranking with no other touch on the source
+reset
+create_account 1 a => true
+create_account 2 b => true
+create_account 3 c => true
+top_up 4 a 100 => 100
+top_up 5 c 100 => 100
+consume 6 c 30 => 70
+transfer 7 a b 50 => transfer1
+top_up 86400008 b 1 => 1
+top_spenders 86400009 3 => [c(30),a(0),b(0)]
+top_up 86400010 a 1 => 101
 
 # Level 4 — merge and history
 reset
