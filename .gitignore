@@ -6,3 +6,4 @@ a.out
 *.dSYM/
 **/cse333/*/test
 **/cse333/*/test_leaks
+cse333/fileio/*.txt
