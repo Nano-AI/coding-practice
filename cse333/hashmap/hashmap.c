@@ -46,7 +46,7 @@ node* hashmap_lookup(unordered_map *map, const char *key) {
     return NULL;
 }
 
-node* hashmap_insert(unordered_map *map, const char* key, const char* value) {
+node* hashmap_insert(unordered_map *map, const char* key, int value) {// const char* value) {
     hashmap_resize(map);
     node* iter = hashmap_lookup(map, key); 
     if (iter == NULL) { // does not exist
@@ -62,12 +62,7 @@ node* hashmap_insert(unordered_map *map, const char* key, const char* value) {
         }
         iter->hash = hash(iter->key);
 
-        iter->value = strdup(value);
-        if (iter->value == NULL) {
-            free((void*) iter->key);
-            free((void*) iter);
-            return NULL;
-        }
+        iter->value = value;// strdup(value);
 
         unsigned long index = hash(key) % map->size;
         iter->next = map->table[index];
@@ -78,10 +73,7 @@ node* hashmap_insert(unordered_map *map, const char* key, const char* value) {
         return iter;
     }
 
-    char *copy = strdup(value);
-    if (copy == NULL) return NULL;
-    free((void*) iter->value);
-    iter->value = copy;
+    iter->value = value;
 
     return iter;
 }
@@ -92,7 +84,6 @@ void hashmap_free(unordered_map *map) {
         while (it != NULL) {
             node *next = it->next;
             free((void*) it->key);
-            free((void*) it->value);
             free((void*) it);
             it = next;
         }
@@ -130,4 +121,64 @@ void hashmap_resize(unordered_map *map) {
     free((void*) map->table);
     map->table = new_table;
     map->size = new_size;
+}
+
+void hashmap_print(unordered_map *map) {
+    printf("{\n");
+    node* p = NULL;
+    for (size_t i = 0; i < map->size; ++i) {
+        node *iter = map->table[i];
+        while (iter != NULL) {
+            if (p == NULL) p = iter;
+            else if (p->value < iter->value) p = iter;
+            printf("  \"%s\": %d\n", iter->key, iter->value);
+            iter = iter->next;
+        }
+    }
+    printf("}\n");
+    printf("max=(\"%s\", %d)\n", p->key, p->value);
+    printf("n=%lu, size=%lu\n", map->n, map->size);
+    fflush(stdout);
+}
+
+static int cmp(const node *a, const node *b) {
+    if (a->value != b->value) return b->value - a->value;
+    return strcmp(a->key, b->key);
+}
+
+size_t partition(node **a, size_t low, size_t high) {
+    node *pivot = a[high];
+    size_t i = low;                                  
+    for (size_t j = low; j < high; ++j)
+        if (cmp(a[j], pivot) < 0) { SWAP_PRIMITIVE(a[i], a[j], node*); ++i; }
+    SWAP_PRIMITIVE(a[i], a[high], node*);
+    return i;
+}
+
+void quicksort(node **a, size_t low, size_t high) {  
+    if (low >= high) return;
+    size_t p = partition(a, low, high);
+    if (p > low) quicksort(a, low, p - 1);         
+    quicksort(a, p + 1, high);
+}
+
+node** hashmap_sorted(unordered_map *map) {
+    node **sorted_array = calloc(map->n, sizeof(node*));
+    if (sorted_array == NULL) {
+        return NULL;
+    }
+
+    size_t array_index = 0;
+
+    for (size_t i = 0; i < map->size; ++i) {
+        node* iter = map->table[i];
+        while (iter != NULL) {
+            sorted_array[array_index++] = iter; 
+            iter = iter->next;
+        }
+    }
+
+    quicksort(sorted_array, 0, map->n - 1);
+
+    return sorted_array;
 }
