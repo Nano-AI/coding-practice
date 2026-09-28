@@ -1,3 +1,8 @@
 **/cpp/test
 **/cpp/test.dSYM/
 __pycache__/
+a.out
+*.pch
+*.dSYM/
+**/cse333/*/test
+**/cse333/*/test_leaks
