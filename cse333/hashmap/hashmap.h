@@ -1,12 +1,12 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
-#define HASHSIZE_INIT 101
+#define HASHSIZE_INIT 32
 
 struct node {
     struct node* next;

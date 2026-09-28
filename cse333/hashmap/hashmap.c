@@ -62,10 +62,6 @@ node* hashmap_insert(unordered_map *map, const char* key, const char* value) {
         }
         iter->hash = hash(iter->key);
 
-        // char *copy = strdup(value);
-        // if (copy == NULL) return NULL;
-        // free(iter->value);
-        // iter->value = copy;
         iter->value = strdup(value);
         if (iter->value == NULL) {
             free((void*) iter->key);
@@ -87,7 +83,6 @@ node* hashmap_insert(unordered_map *map, const char* key, const char* value) {
     free((void*) iter->value);
     iter->value = copy;
 
-    ++map->n;
     return iter;
 }
 
@@ -114,7 +109,7 @@ void hashmap_resize(unordered_map *map) {
     */
     if (4 * map->n < 3 * map->size) return;
 
-    size_t new_size = map->size * 2;
+    size_t new_size = map->size << 1;
     node **new_table = calloc(new_size, sizeof(node*));
 
     if (new_table == NULL) {
