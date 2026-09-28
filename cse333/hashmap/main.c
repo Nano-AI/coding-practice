@@ -1,16 +1,25 @@
 #include "stdio.h"
 #include "hashmap.h"
+#include <stdlib.h>
 
 int main() {
     unordered_map *map = hashmap_create();
-    hashmap_insert(map, "Fortnite", "Balls");
-    hashmap_insert(map, "Test", " number one");
-    hashmap_insert(map, "Test", "icles");
 
-    node* res = hashmap_lookup(map, "Fortnite");
-    printf("%s : %s\n", res->key, res->value);
-    res = hashmap_lookup(map, "Test");
-    printf("%s%s\n", res->key, res->value);
+    char str[10];
+    for (int i = 0; i < 200; ++i) {
+        sprintf(str, "%d", i);
+        hashmap_insert(map, str, str);
+
+        printf("size=%d, n=%d\n", (int) map->size, (int) map->n);
+    }
+
+    for (int i = 0; i < 200; ++i) {
+        sprintf(str, "%d", i);
+        node* res = hashmap_lookup(map, str);
+        if (strcmp(res->key, res->value) != 0) {
+            printf("ERROR: key(%s) != value(%s)\n", res->key, res->value);
+        }
+    }
 
     hashmap_free(map);
 

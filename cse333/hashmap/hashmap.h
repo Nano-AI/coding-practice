@@ -12,6 +12,7 @@ struct node {
     struct node* next;
     const char* key;
     const char* value;
+    unsigned long hash;
 };
 
 typedef struct node node;
@@ -20,16 +21,19 @@ struct unordered_map {
     // pointer to the head of a 1d array of node pointers
     node **table;
     size_t size;
+    size_t n;
 };
 
 typedef struct unordered_map unordered_map;
 
 /* djb2 */
-unsigned long hash(char *str);
+unsigned long hash(const char *str);
 
 unordered_map* hashmap_create();
-node* hashmap_lookup(unordered_map *map, char *key);
-node* hashmap_insert(unordered_map *map, char *key, char *value);
+unordered_map* hashmap_create_size(size_t size);
+node* hashmap_lookup(unordered_map *map, const char *key);
+node* hashmap_insert(unordered_map *map, const char *key, const char *value);
 void hashmap_free(unordered_map *map);
+void hashmap_resize(unordered_map *map);
 
 #endif
